@@ -12,6 +12,7 @@
 #include <android/log.h>
 #include <pthread.h>
 #include <unistd.h>
+#include <common/psi_analytics_context.h>
 
 static int pfd[2];
 static pthread_t loggingThread;
@@ -130,11 +131,17 @@ int run_opprf(ENCRYPTO::PsiAnalyticsContext &context){
     return output;
 }
 
+double get_some_context(JNIEnv* env,
+                     jobject /* this */) {
+    return context.timings.aby_online;
+}
+
 extern "C" JNIEXPORT jstring JNICALL
 nativeRun(
         JNIEnv* env,
         jobject /* this */) {
     int out = run_opprf(context);
+    PrintTimings(context);
     std::string hello = "Hello from C++ " + context.address + std::to_string(out);
     return env->NewStringUTF(hello.c_str());
 }
@@ -154,6 +161,7 @@ JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
             {"nativeRun", "()Ljava/lang/String;", reinterpret_cast<void*>(nativeRun)},
             {"nativeLogging", "()I", reinterpret_cast<void*>(runLoggingThread)},
             {"nativeSetContext", "(IIIFLjava/lang/String;IIIIIII)V", reinterpret_cast<void*>(setContext)},
+            {"nativeGetSomeContext", "()D", reinterpret_cast<void*>(get_some_context)}
     };
     int rc = env->RegisterNatives(c, methods, sizeof(methods)/sizeof(JNINativeMethod));
     if (rc != JNI_OK) return rc;
