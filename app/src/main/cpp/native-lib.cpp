@@ -16,6 +16,8 @@
 static int pfd[2];
 static pthread_t loggingThread;
 static const char *LOG_TAG = "OPPRF COUT CERR";
+// later create a class object to better manage psi runs
+ENCRYPTO::PsiAnalyticsContext context;
 
 static void *loggingFunction(void*) {
     ssize_t readSize;
@@ -34,7 +36,8 @@ static void *loggingFunction(void*) {
     return 0;
 }
 
-static int runLoggingThread() { // run this function to redirect your output to android log
+static int runLoggingThread( JNIEnv* env,
+                             jobject /* this */) { // run this function to redirect your output to android log
     setvbuf(stdout, 0, _IOLBF, 0); // make stdout line-buffered
     setvbuf(stderr, 0, _IONBF, 0); // make stderr unbuffered
 
@@ -53,22 +56,47 @@ static int runLoggingThread() { // run this function to redirect your output to 
     return 0;
 }
 
-auto get_context() {
-    ENCRYPTO::PsiAnalyticsContext context;
+void setContext(JNIEnv* env,
+                        jobject /* this */,
+                        jint neles,
+                        jint oneles,
+                        jint bitlen,
+                        jfloat epsilon,
+                        jstring ipaddr,
+                        jint port,
+                        jint nthreads,
+                        jint threshold,
+                        jint megabins,
+                        jint polys,
+                        jint nfuns,
+                        jint psi_type){
     context.role= CLIENT; // CLIENT
-    context.neles=1000u;
-    context.bitlen=61u;
-    context.epsilon=2.4f;
-    context.address="192.168.178.66";
-    context.port=7777;
-    context.nthreads=1;
-    context.notherpartyselems=0u;
-    context.threshold=0u;
-    context.nmegabins=1u;
-    context.polynomialsize=0u;
-    context.nfuns=2u;
+    context.neles=(unsigned int)neles;
+    context.bitlen=(unsigned int)bitlen;
+    context.epsilon=(float)epsilon;
+    const char * address = env->GetStringUTFChars(ipaddr, 0);
+    context.address=address;
+    env->ReleaseStringUTFChars(ipaddr,address);
+    context.port=(int)port;
+    context.nthreads=(int)nthreads;
+    context.notherpartyselems=(unsigned int)oneles;
+    context.threshold=(unsigned int)threshold;
+    context.nmegabins=(unsigned int)megabins;
+    context.polynomialsize=(unsigned int)polys;
+    context.nfuns=(unsigned int)nfuns;
     // type checks, we choose NONE for now.
-    context.analytics_type = ENCRYPTO::PsiAnalyticsContext::NONE;
+    if ((int)psi_type == 0) {
+        context.analytics_type = ENCRYPTO::PsiAnalyticsContext::NONE;
+    } else if ((int)psi_type == 1) {
+        context.analytics_type = ENCRYPTO::PsiAnalyticsContext::THRESHOLD;
+    } else if ((int)psi_type == 2) {
+        context.analytics_type = ENCRYPTO::PsiAnalyticsContext::SUM;
+    } else if ((int)psi_type == 3) {
+        context.analytics_type = ENCRYPTO::PsiAnalyticsContext::SUM_IF_GT_THRESHOLD;
+    } else {
+        std::string error_msg(std::string("Unknown function type: " + std::to_string((int)psi_type)));
+        throw std::runtime_error(error_msg.c_str());
+    }
     //
     if (context.notherpartyselems == 0) {
         context.notherpartyselems = context.neles;
@@ -81,30 +109,55 @@ auto get_context() {
     const std::size_t client_neles =
             context.role == CLIENT ? context.neles : context.notherpartyselems;
     context.nbins = client_neles * context.epsilon;
-    return context;
+    std::cout << "Saved context with " +
+        std::to_string(context.neles) + " " +
+        std::to_string(context.notherpartyselems) + " " +
+        std::to_string(context.bitlen) + " " +
+        std::to_string(context.epsilon) + " " +
+        context.address + " " +
+        std::to_string(context.port) + " " +
+        std::to_string(context.nthreads) + " " +
+        std::to_string(context.threshold) + " " +
+        std::to_string(context.nmegabins) + " " +
+        std::to_string(context.polynomialsize) + " " +
+        std::to_string(context.analytics_type) << std::endl;
 }
 
 int run_opprf(ENCRYPTO::PsiAnalyticsContext &context){
-//    std::unique_ptr<CSocket> sock = Connect(context.address.c_str(), context.port);
-//    if (sock == NULL) {
-//        return 1;
-//    } else {
-//        return 0;
-//    }
     auto gen_bitlen = static_cast<std::size_t>(std::ceil(std::log2(context.neles))) + 3;
     auto inputs = ENCRYPTO::GeneratePseudoRandomElements(context.neles, gen_bitlen);
-    ENCRYPTO::run_psi_analytics(inputs, context);
-    return EXIT_SUCCESS;
+    auto output = ENCRYPTO::run_psi_analytics(inputs, context);
+    return output;
 }
 
 extern "C" JNIEXPORT jstring JNICALL
-Java_com_example_opprf_1psi_MainActivity_stringFromJNI(
+nativeRun(
         JNIEnv* env,
         jobject /* this */) {
-    runLoggingThread();
-    auto context = get_context();
     int out = run_opprf(context);
     std::string hello = "Hello from C++ " + context.address + std::to_string(out);
     return env->NewStringUTF(hello.c_str());
+}
+
+JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
+    JNIEnv* env;
+    if (vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6) != JNI_OK) {
+        return JNI_ERR;
+    }
+
+    // Find your class. JNI_OnLoad is called from the correct class loader context for this to work.
+    jclass c = env->FindClass("com/example/opprf_psi/MainActivity");
+    if (c == nullptr) return JNI_ERR;
+
+    // Register your class' native methods.
+    static const JNINativeMethod methods[] = {
+            {"nativeRun", "()Ljava/lang/String;", reinterpret_cast<void*>(nativeRun)},
+            {"nativeLogging", "()I", reinterpret_cast<void*>(runLoggingThread)},
+            {"nativeSetContext", "(IIIFLjava/lang/String;IIIIIII)V", reinterpret_cast<void*>(setContext)},
+    };
+    int rc = env->RegisterNatives(c, methods, sizeof(methods)/sizeof(JNINativeMethod));
+    if (rc != JNI_OK) return rc;
+
+    return JNI_VERSION_1_6;
 }
 

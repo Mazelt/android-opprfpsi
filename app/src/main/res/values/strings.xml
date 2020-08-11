@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">Opprf-PSI</string>
+    <string-array name="function_choices">
+        <item>None</item>
+        <item>Threshold</item>
+        <item>Sum</item>
+        <item>SumIfGtThreshold</item>
+    </string-array>
 </resources>
