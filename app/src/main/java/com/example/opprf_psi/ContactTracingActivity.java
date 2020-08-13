@@ -30,7 +30,7 @@ public class ContactTracingActivity extends AppCompatActivity {
                 sum = r.nextInt(51);
                 GradientDrawable ct_background = (GradientDrawable) sumout.getBackground();
                 ct_background.setColor(getSumColor(sum));
-                sumout.setText(""+sum);
+                sumout.setText(""+nativeRun2());
             }
         });
     }
@@ -70,5 +70,7 @@ public class ContactTracingActivity extends AppCompatActivity {
             return Color.BLACK;
         }
     }
+
+    public native int nativeRun2();
 }
 
