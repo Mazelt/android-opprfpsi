@@ -1,5 +1,6 @@
 #include <jni.h>
 #include <string>
+#include <sstream>
 #include <cmath>
 #include <ENCRYPTO_utils/crypto/crypto.h>
 //#include <ENCRYPTO_utils/connection.h>
@@ -131,9 +132,25 @@ int run_opprf(ENCRYPTO::PsiAnalyticsContext &context){
     return output;
 }
 
-double get_some_context(JNIEnv* env,
+jstring get_some_context(JNIEnv* env,
                      jobject /* this */) {
-    return context.timings.aby_online;
+    std::stringstream out;
+    out <<"Time for hashing " << context.timings.hashing << " ms\n";
+    out << "Time for OPRF " << context.timings.oprf << " ms\n";
+    out << "Time for polynomials " << context.timings.polynomials << " ms\n";
+    out << "Time for transmission of the polynomials " << context.timings.polynomials_transmission
+        << " ms\n";
+//  out << "Time for OPPRF " << context.timings.opprf << " ms\n";
+
+    out << "ABY timings: online time " << context.timings.aby_online << " ms, setup time "
+        << context.timings.aby_setup << " ms, total time " << context.timings.aby_total
+        << " ms\n";
+
+    out << "Total runtime: " << context.timings.total << "ms\n";
+    out << "Total runtime w/o base OTs: "
+        << context.timings.total - context.timings.base_ots_aby - context.timings.base_ots_libote
+        << "ms\n";
+    return env->NewStringUTF(out.str().c_str());
 }
 
 extern "C" JNIEXPORT jstring JNICALL
@@ -142,8 +159,8 @@ nativeRun(
         jobject /* this */) {
     int out = run_opprf(context);
     PrintTimings(context);
-    std::string hello = "Hello from C++ " + context.address + std::to_string(out);
-    return env->NewStringUTF(hello.c_str());
+    std::string outs =  "PSI run finished. Returned " + std::to_string(out) + "\n";
+    return env->NewStringUTF(outs.c_str());
 }
 
 JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
@@ -161,7 +178,7 @@ JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
             {"nativeRun", "()Ljava/lang/String;", reinterpret_cast<void*>(nativeRun)},
             {"nativeLogging", "()I", reinterpret_cast<void*>(runLoggingThread)},
             {"nativeSetContext", "(IIIFLjava/lang/String;IIIIIII)V", reinterpret_cast<void*>(setContext)},
-            {"nativeGetSomeContext", "()D", reinterpret_cast<void*>(get_some_context)}
+            {"nativeGetSomeContext", "()Ljava/lang/String;", reinterpret_cast<void*>(get_some_context)}
     };
     int rc = env->RegisterNatives(c, methods, sizeof(methods)/sizeof(JNINativeMethod));
     if (rc != JNI_OK) return rc;

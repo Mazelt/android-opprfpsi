@@ -6,4 +6,6 @@
         <item>Sum</item>
         <item>SumIfGtThreshold</item>
     </string-array>
+    <string name="action_benchmark">Benchmark</string>
+    <string name="action_contact_tracing">CT</string>
 </resources>

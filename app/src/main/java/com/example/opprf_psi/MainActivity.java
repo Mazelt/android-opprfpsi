@@ -2,7 +2,11 @@ package com.example.opprf_psi;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.ActionBar;
+import android.content.Intent;
 import android.os.Bundle;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -20,6 +24,29 @@ public class MainActivity extends AppCompatActivity {
         System.loadLibrary("ssl");
         System.loadLibrary("native-lib");
 
+    }
+    @Override
+    public  boolean onCreateOptionsMenu(Menu menu) {
+        // inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()){
+            case R.id.action_benchmark:
+                return true;
+
+            case R.id.action_contact_tracing:
+                Intent intentToContactTracing = new Intent(this, ContactTracingActivity.class);
+                intentToContactTracing.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                startActivity(intentToContactTracing);
+                return true;
+
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     @Override
@@ -75,12 +102,12 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void run() {
                     final String output = nativeRun();
-                    final String cont_output = Double.toString(nativeGetSomeContext());
+                    final String cont_output = nativeGetSomeContext();
                     tv.post(new Runnable() {
                         @Override
                         public void run() {
                             tv.append(output);
-                            tv.append("ABY onbline timing"+ cont_output);
+                            tv.append(cont_output);
                             thisbutton.setEnabled(true);
 
                         }
@@ -101,5 +128,5 @@ public class MainActivity extends AppCompatActivity {
     public native void nativeSetContext(int neles, int oneles, int bitlen, float epsilon, String ipaddr, int port, int nthreads, int threshold, int megabins, int polys, int nfuns, int psi_type);
     public native String nativeRun();
     public native int nativeLogging();
-    public native double nativeGetSomeContext();
+    public native String nativeGetSomeContext();
 }
