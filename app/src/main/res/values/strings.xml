@@ -5,6 +5,12 @@
         <item>Threshold</item>
         <item>Sum</item>
         <item>SumIfGtThreshold</item>
+        <item>PayloadASum</item>
+        <item>PayloadASumGT</item>
+        <item>PayloadABSum</item>
+        <item>PayloadABSumGT</item>
+        <item>PayloadABMulSum</item>
+        <item>PayloadABMulSumGT</item>
     </string-array>
     <string name="action_benchmark">Benchmark</string>
     <string name="action_contact_tracing">CT</string>

@@ -71,6 +71,7 @@ void setContext(JNIEnv* env,
                         jint megabins,
                         jint polys,
                         jint nfuns,
+                        jint payload_bl,
                         jint psi_type){
     context.role= CLIENT; // CLIENT
     context.neles=(unsigned int)neles;
@@ -86,6 +87,7 @@ void setContext(JNIEnv* env,
     context.nmegabins=(unsigned int)megabins;
     context.polynomialsize=(unsigned int)polys;
     context.nfuns=(unsigned int)nfuns;
+    context.payload_bitlen=(unsigned int)payload_bl;
     // type checks, we choose NONE for now.
     if ((int)psi_type == 0) {
         context.analytics_type = ENCRYPTO::PsiAnalyticsContext::NONE;
@@ -95,6 +97,18 @@ void setContext(JNIEnv* env,
         context.analytics_type = ENCRYPTO::PsiAnalyticsContext::SUM;
     } else if ((int)psi_type == 3) {
         context.analytics_type = ENCRYPTO::PsiAnalyticsContext::SUM_IF_GT_THRESHOLD;
+    } else if ((int)psi_type == 4) {
+        context.analytics_type = ENCRYPTO::PsiAnalyticsContext::PAYLOAD_A_SUM;
+    } else if ((int)psi_type == 5) {
+        context.analytics_type = ENCRYPTO::PsiAnalyticsContext::PAYLOAD_A_SUM_GT;
+    } else if ((int)psi_type == 6) {
+        context.analytics_type = ENCRYPTO::PsiAnalyticsContext::PAYLOAD_AB_SUM;
+    } else if ((int)psi_type == 7) {
+        context.analytics_type = ENCRYPTO::PsiAnalyticsContext::PAYLOAD_AB_SUM_GT;
+    } else if ((int)psi_type == 8) {
+        context.analytics_type = ENCRYPTO::PsiAnalyticsContext::PAYLOAD_AB_MUL_SUM;
+    } else if ((int)psi_type == 9) {
+        context.analytics_type = ENCRYPTO::PsiAnalyticsContext::PAYLOAD_AB_MUL_SUM_GT;
     } else {
         std::string error_msg(std::string("Unknown function type: " + std::to_string((int)psi_type)));
         throw std::runtime_error(error_msg.c_str());
@@ -111,24 +125,40 @@ void setContext(JNIEnv* env,
     const std::size_t client_neles =
             context.role == CLIENT ? context.neles : context.notherpartyselems;
     context.nbins = client_neles * context.epsilon;
-    std::cout << "Saved context with " +
-        std::to_string(context.neles) + " " +
-        std::to_string(context.notherpartyselems) + " " +
-        std::to_string(context.bitlen) + " " +
-        std::to_string(context.epsilon) + " " +
-        context.address + " " +
-        std::to_string(context.port) + " " +
-        std::to_string(context.nthreads) + " " +
-        std::to_string(context.threshold) + " " +
-        std::to_string(context.nmegabins) + " " +
-        std::to_string(context.polynomialsize) + " " +
-        std::to_string(context.analytics_type) << std::endl;
+    std::cout << "Saved context." << std::endl;
+//        std::to_string(context.neles) + " " +
+//        std::to_string(context.notherpartyselems) + " " +
+//        std::to_string(context.bitlen) + " " +
+//        std::to_string(context.epsilon) + " " +
+//        context.address + " " +
+//        std::to_string(context.port) + " " +
+//        std::to_string(context.nthreads) + " " +
+//        std::to_string(context.threshold) + " " +
+//        std::to_string(context.nmegabins) + " " +
+//        std::to_string(context.polynomialsize) + " " +
+//        std::to_string(context.analytics_type) << std::endl;
 }
 
 int run_opprf(ENCRYPTO::PsiAnalyticsContext &context){
-    auto gen_bitlen = static_cast<std::size_t>(std::ceil(std::log2(context.neles))) + 3;
-    auto inputs = ENCRYPTO::GeneratePseudoRandomElements(context.neles, gen_bitlen);
-    auto output = ENCRYPTO::run_psi_analytics(inputs, context);
+    auto inputs = ENCRYPTO::GenerateSequentialElements(context.neles);
+    auto psi_type = context.analytics_type;
+
+    bool payload_b_if = (psi_type == ENCRYPTO::PsiAnalyticsContext::PAYLOAD_AB_SUM ||
+                         psi_type == ENCRYPTO::PsiAnalyticsContext::PAYLOAD_AB_SUM_GT ||
+                         psi_type == ENCRYPTO::PsiAnalyticsContext::PAYLOAD_AB_MUL_SUM ||
+                         psi_type == ENCRYPTO::PsiAnalyticsContext::PAYLOAD_AB_MUL_SUM_GT);
+    bool payload_a_if = (payload_b_if || psi_type == ENCRYPTO::PsiAnalyticsContext::PAYLOAD_A_SUM ||
+                         psi_type == ENCRYPTO::PsiAnalyticsContext::PAYLOAD_A_SUM_GT);
+
+    std::vector<uint64_t> payload_a, payload_b;
+
+    if (context.role == CLIENT && payload_a_if) {
+        payload_a = ENCRYPTO::GenerateRandomPayload(context.neles, context.payload_bitlen, CLIENT);
+
+    } else if (context.role == SERVER && payload_b_if){
+        payload_b = ENCRYPTO::GenerateRandomPayload(context.neles, context.payload_bitlen, SERVER);
+    }
+    auto output = ENCRYPTO::run_psi_analytics(inputs, context, payload_a, payload_b);
     return output;
 }
 
@@ -186,7 +216,7 @@ JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
     static const JNINativeMethod methodsMain[] = {
             {"nativeRun", "()Ljava/lang/String;", reinterpret_cast<void*>(nativeRun)},
             {"nativeLogging", "()I", reinterpret_cast<void*>(runLoggingThread)},
-            {"nativeSetContext", "(IIIFLjava/lang/String;IIIIIII)V", reinterpret_cast<void*>(setContext)},
+            {"nativeSetContext", "(IIIFLjava/lang/String;IIIIIIII)V", reinterpret_cast<void*>(setContext)},
             {"nativeGetSomeContext", "()Ljava/lang/String;", reinterpret_cast<void*>(get_some_context)}
     };
     int rc = env->RegisterNatives(cMain, methodsMain, sizeof(methodsMain) / sizeof(JNINativeMethod));

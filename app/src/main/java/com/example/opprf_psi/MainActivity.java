@@ -93,9 +93,11 @@ public class MainActivity extends AppCompatActivity {
             int polys = Integer.parseInt(etpolys.getText().toString());
             EditText etnfuns = findViewById(R.id.editTextnfuns);
             int nfuns = Integer.parseInt(etnfuns.getText().toString());
+            EditText etpayloadbl = findViewById(R.id.editTextPayloadbl);
+            int payloadbl = Integer.parseInt(etpayloadbl.getText().toString());
             Spinner sptype = findViewById(R.id.spinner);
             int psi_type = sptype.getSelectedItemPosition();
-            nativeSetContext(neles, oneles, bitlen, epsilon, ipaddr, port, nthreads, threshold, nmegabins, polys, nfuns, psi_type);
+            nativeSetContext(neles, oneles, bitlen, epsilon, ipaddr, port, nthreads, threshold, nmegabins, polys, nfuns, payloadbl, psi_type);
             final Button thisbutton = (Button)findViewById(R.id.buttonrun);
             thisbutton.setEnabled(false);
             new Thread(new Runnable() {
@@ -125,7 +127,7 @@ public class MainActivity extends AppCompatActivity {
      * A native method that is implemented by the 'native-lib' native library,
      * which is packaged with this application.
      */
-    public native void nativeSetContext(int neles, int oneles, int bitlen, float epsilon, String ipaddr, int port, int nthreads, int threshold, int megabins, int polys, int nfuns, int psi_type);
+    public native void nativeSetContext(int neles, int oneles, int bitlen, float epsilon, String ipaddr, int port, int nthreads, int threshold, int megabins, int polys, int nfuns, int payloadbl, int psi_type);
     public native String nativeRun();
     public native int nativeLogging();
     public native String nativeGetSomeContext();

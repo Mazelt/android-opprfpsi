@@ -42,7 +42,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:inputType="number"
-                    android:text="1000" />
+                    android:text="4096" />
             </LinearLayout>
 
             <LinearLayout
@@ -63,7 +63,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:inputType="number"
-                    android:text="1000" />
+                    android:text="4096" />
             </LinearLayout>
 
             <LinearLayout
@@ -127,7 +127,7 @@
                     android:layout_weight="1"
                     android:digits="0123456789."
                     android:inputType="number|numberDecimal"
-                    android:text="192.168.178.66" />
+                    android:text="192.168.178.49" />
 
             </LinearLayout>
 
@@ -213,7 +213,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:inputType="number"
-                    android:text="1" />
+                    android:text="16" />
             </LinearLayout>
 
 
@@ -235,7 +235,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:inputType="number"
-                    android:text="0" />
+                    android:text="975" />
             </LinearLayout>
 
 
@@ -257,9 +257,8 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:inputType="number"
-                    android:text="2" />
+                    android:text="3" />
             </LinearLayout>
-
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -268,6 +267,27 @@
 
                 <TextView
                     android:id="@+id/textView15"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Bit-length of Payload" />
+
+                <EditText
+                    android:id="@+id/editTextPayloadbl"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:inputType="number"
+                    android:text="2" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/textView16"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
