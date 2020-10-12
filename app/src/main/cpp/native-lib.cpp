@@ -166,12 +166,11 @@ int run_opprf(ENCRYPTO::PsiAnalyticsContext &context){
 jstring get_some_context(JNIEnv* env,
                      jobject /* this */) {
     std::stringstream out;
-    out <<"Time for hashing " << context.timings.hashing << " ms\n";
+    out << "Time for hashing " << context.timings.hashing << " ms\n";
     out << "Time for OPRF " << context.timings.oprf << " ms\n";
     out << "Time for polynomials " << context.timings.polynomials << " ms\n";
     out << "Time for transmission of the polynomials " << context.timings.polynomials_transmission
         << " ms\n";
-//  out << "Time for OPPRF " << context.timings.opprf << " ms\n";
 
     out << "ABY timings: online time " << context.timings.aby_online << " ms, setup time "
         << context.timings.aby_setup << " ms, total time " << context.timings.aby_total
@@ -184,17 +183,8 @@ jstring get_some_context(JNIEnv* env,
     return env->NewStringUTF(out.str().c_str());
 }
 
-extern "C" JNIEXPORT jstring JNICALL
-nativeRun(
-        JNIEnv* env,
-        jobject /* this */) {
-    int out = run_opprf(context);
-    PrintTimings(context);
-    std::string outs =  "PSI run finished. Returned " + std::to_string(out) + "\n";
-    return env->NewStringUTF(outs.c_str());
-}
 extern "C" JNIEXPORT jint JNICALL
-nativeRun2(
+nativeRun(
         JNIEnv* env,
         jobject /* this */) {
     int out = run_opprf(context);
@@ -209,22 +199,16 @@ JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
 
     // Find your class. JNI_OnLoad is called from the correct class loader context for this to work.
     jclass cMain = env->FindClass("com/example/opprf_psi/MainActivity");
-    jclass cCT = env->FindClass("com/example/opprf_psi/ContactTracingActivity");
-    if (cMain == nullptr || cCT == nullptr) return JNI_ERR;
+    if (cMain == nullptr) return JNI_ERR;
 
     // Register main class' native methods.
-    static const JNINativeMethod methodsMain[] = {
-            {"nativeRun", "()Ljava/lang/String;", reinterpret_cast<void*>(nativeRun)},
+    static const JNINativeMethod methods[] = {
+            {"nativeRun", "()I", reinterpret_cast<void*>(nativeRun)},
             {"nativeLogging", "()I", reinterpret_cast<void*>(runLoggingThread)},
             {"nativeSetContext", "(IIIFLjava/lang/String;IIIIIIII)V", reinterpret_cast<void*>(setContext)},
             {"nativeGetSomeContext", "()Ljava/lang/String;", reinterpret_cast<void*>(get_some_context)}
     };
-    int rc = env->RegisterNatives(cMain, methodsMain, sizeof(methodsMain) / sizeof(JNINativeMethod));
-    if (rc != JNI_OK) return rc;
-    static const JNINativeMethod methodsCT[] = {
-            {"nativeRun2", "()I", reinterpret_cast<void*>(nativeRun2)},
-    };
-    rc = env->RegisterNatives(cCT, methodsCT, sizeof(methodsCT)/ sizeof(JNINativeMethod));
+    int rc = env->RegisterNatives(cMain, methods, sizeof(methods) / sizeof(JNINativeMethod));
     if (rc != JNI_OK) return rc;
 
     return JNI_VERSION_1_6;

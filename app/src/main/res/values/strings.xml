@@ -12,7 +12,4 @@
         <item>PayloadABMulSum</item>
         <item>PayloadABMulSumGT</item>
     </string-array>
-    <string name="action_benchmark">Benchmark</string>
-    <string name="action_contact_tracing">CT</string>
-    <string name="ct_description">All metrics other than PSI_Type and the ones listed below will be taken from the Benchmark screen."</string>
 </resources>

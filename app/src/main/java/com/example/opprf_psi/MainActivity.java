@@ -2,11 +2,10 @@ package com.example.opprf_psi;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.app.ActionBar;
-import android.content.Intent;
+
+import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -24,29 +23,6 @@ public class MainActivity extends AppCompatActivity {
         System.loadLibrary("ssl");
         System.loadLibrary("native-lib");
 
-    }
-    @Override
-    public  boolean onCreateOptionsMenu(Menu menu) {
-        // inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()){
-            case R.id.action_benchmark:
-                return true;
-
-            case R.id.action_contact_tracing:
-                Intent intentToContactTracing = new Intent(this, ContactTracingActivity.class);
-                intentToContactTracing.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                startActivity(intentToContactTracing);
-                return true;
-
-            default:
-                return super.onOptionsItemSelected(item);
-        }
     }
 
     @Override
@@ -99,19 +75,22 @@ public class MainActivity extends AppCompatActivity {
             int psi_type = sptype.getSelectedItemPosition();
             nativeSetContext(neles, oneles, bitlen, epsilon, ipaddr, port, nthreads, threshold, nmegabins, polys, nfuns, payloadbl, psi_type);
             final Button thisbutton = (Button)findViewById(R.id.buttonrun);
+            final TextView sumout = (TextView) findViewById(R.id.sumout);
             thisbutton.setEnabled(false);
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    final String output = nativeRun();
+                    final int output = nativeRun();
                     final String cont_output = nativeGetSomeContext();
                     tv.post(new Runnable() {
                         @Override
                         public void run() {
-                            tv.append(output);
+                            tv.append("PSI run returned: "+output+"\n");
                             tv.append(cont_output);
                             thisbutton.setEnabled(true);
-
+                            GradientDrawable sum_background = (GradientDrawable) sumout.getBackground();
+                            sum_background.setColor(getSumColor(output));
+                            sumout.setText(""+output);
                         }
                     });
                 }
@@ -121,14 +100,26 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
-
+    public int getSumColor(int sum){
+        if (sum == 0) {
+            return Color.GRAY;
+        } else if (sum < 10 ) {
+            return Color.GREEN;
+        } else if (sum < 30 ) {
+            return Color.YELLOW;
+        } else if (sum >= 30 ) {
+            return Color.RED;
+        } else {
+            return Color.BLACK;
+        }
+    }
 
     /**
      * A native method that is implemented by the 'native-lib' native library,
      * which is packaged with this application.
      */
     public native void nativeSetContext(int neles, int oneles, int bitlen, float epsilon, String ipaddr, int port, int nthreads, int threshold, int megabins, int polys, int nfuns, int payloadbl, int psi_type);
-    public native String nativeRun();
+    public native int nativeRun();
     public native int nativeLogging();
     public native String nativeGetSomeContext();
 }
