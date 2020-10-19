@@ -180,6 +180,23 @@ jstring get_some_context(JNIEnv* env,
     out << "Total runtime w/o base OTs: "
         << context.timings.total - context.timings.base_ots_aby - context.timings.base_ots_libote
         << "ms\n";
+    out << "Data for polynomials recv/sent " << context.comm.polynomials_transmission_recv
+              << " / " << context.comm.polynomials_transmission_sent << " b\n";
+    out << "Data for oprf recv/sent " << context.comm.oprf_recv << " / " << context.comm.oprf_sent << " b\n";
+
+    out << "ABY recv: online " << context.comm.aby_online_recv << " bytes, setup "
+              << context.comm.aby_setup_recv << " bytes, total " << context.comm.aby_total_recv
+              << " bytes\n";
+    out << "ABY sent: online " << context.comm.aby_online_sent << " bytes, setup "
+              << context.comm.aby_setup_sent << " bytes, total " << context.comm.aby_total_sent
+              << " bytes\n";
+    auto total_recv =
+            context.comm.polynomials_transmission_recv + context.comm.aby_total_recv + context.comm.oprf_recv;
+    auto total_sent = context.comm.polynomials_transmission_sent + context.comm.aby_total_sent + context.comm.oprf_sent;
+    out << "Total recv: " << total_recv << " bytes\n";
+    out << "Total sent: " << total_sent << " bytes\n";
+    out << "Total recv w/o base OTs: " << total_recv - context.comm.base_ots_aby_recv - context.comm.base_ots_libote_recv << " b\n";
+    out << "Total sent w/o base OTs: " << total_sent - context.comm.base_ots_aby_sent - context.comm.base_ots_libote_sent << " b\n";
     return env->NewStringUTF(out.str().c_str());
 }
 

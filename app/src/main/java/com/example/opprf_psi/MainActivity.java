@@ -35,6 +35,8 @@ public class MainActivity extends AppCompatActivity {
                 R.array.function_choices, android.R.layout.simple_spinner_item);
         spadapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(spadapter);
+        final Button button_encContext = findViewById(R.id.buttonclear);
+        button_encContext.setOnClickListener(clickClearListener);
 
         final Button button_runpsi = findViewById(R.id.buttonrun);
         button_runpsi.setOnClickListener(clickRunListener);
@@ -42,41 +44,88 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    private View.OnClickListener clickClearListener = new View.OnClickListener() {
+        public void onClick(View v) {
+            final TextView encodedContext = findViewById(R.id.editTextEncodedContext);
+            encodedContext.setText("");
+        }
+    };
+
     private View.OnClickListener clickRunListener = new View.OnClickListener() {
         public void onClick(View v) {
             final TextView tv = findViewById(R.id.textViewOUTPUT);
-            tv.append("Setting Context...\n");
-            tv.append("Running PSI!\n");
-            EditText etneles = findViewById(R.id.editTextneles);
-            int neles = Integer.parseInt(etneles.getText().toString());
-            EditText etoneles = findViewById(R.id.editTextotherneles);
-            int oneles = Integer.parseInt(etoneles.getText().toString());
-            EditText etbitlen = findViewById(R.id.editTextbitlen);
-            int bitlen = Integer.parseInt(etbitlen.getText().toString());
-            EditText etepsilon = findViewById(R.id.editTextepsilon);
-            float epsilon = Float.parseFloat(etepsilon.getText().toString());
-            EditText etipaddr = findViewById(R.id.editTextaddress);
-            String ipaddr = etipaddr.getText().toString();
-            EditText etport = findViewById(R.id.editTextport);
-            int port = Integer.parseInt(etport.getText().toString());
-            EditText etnthreads = findViewById(R.id.editTextnthreads);
-            int nthreads = Integer.parseInt(etnthreads.getText().toString());
-            EditText etthreshold = findViewById(R.id.editTextthreshold);
-            int threshold = Integer.parseInt(etthreshold.getText().toString());
-            EditText etmegabins = findViewById(R.id.editTextnmegabins);
-            int nmegabins = Integer.parseInt(etmegabins.getText().toString());
-            EditText etpolys = findViewById(R.id.editTextpolysize);
-            int polys = Integer.parseInt(etpolys.getText().toString());
-            EditText etnfuns = findViewById(R.id.editTextnfuns);
-            int nfuns = Integer.parseInt(etnfuns.getText().toString());
-            EditText etpayloadbl = findViewById(R.id.editTextPayloadbl);
-            int payloadbl = Integer.parseInt(etpayloadbl.getText().toString());
-            Spinner sptype = findViewById(R.id.spinner);
-            int psi_type = sptype.getSelectedItemPosition();
+            EditText etencContext = findViewById(R.id.editTextEncodedContext);
+            String encodedContext = etencContext.getText().toString();
+            int neles;
+            int oneles;
+            int bitlen;
+            float epsilon;
+            String ipaddr ;
+            int port;
+            int nthreads;
+            int threshold;
+            int nmegabins;
+            int polys;
+            int nfuns;
+            int payloadbl;
+            int psi_type;
+            if (!encodedContext.isEmpty()) {
+                String[] contextElements = encodedContext.split(";");
+                if (contextElements.length != 13) {
+                    tv.append("Encoded Context is not complete!\n");
+                    return;
+                }
+                tv.append("Setting encoded Context...\n");
+                neles = Integer.parseInt(contextElements[0]);
+                oneles = Integer.parseInt(contextElements[1]);
+                bitlen = Integer.parseInt(contextElements[2]);
+                epsilon = Float.parseFloat(contextElements[3]);
+                ipaddr = contextElements[4];
+                port = Integer.parseInt(contextElements[5]);
+                nthreads = Integer.parseInt(contextElements[6]);
+                threshold = Integer.parseInt(contextElements[7]);
+                nmegabins = Integer.parseInt(contextElements[8]);
+                polys = Integer.parseInt(contextElements[9]);
+                nfuns = Integer.parseInt(contextElements[10]);
+                payloadbl = Integer.parseInt(contextElements[11]);
+                psi_type = Integer.parseInt(contextElements[12]);
+
+
+            } else {
+
+                tv.append("Setting Context...\n");
+                EditText etneles = findViewById(R.id.editTextneles);
+                neles = Integer.parseInt(etneles.getText().toString());
+                EditText etoneles = findViewById(R.id.editTextotherneles);
+                oneles = Integer.parseInt(etoneles.getText().toString());
+                EditText etbitlen = findViewById(R.id.editTextbitlen);
+                bitlen = Integer.parseInt(etbitlen.getText().toString());
+                EditText etepsilon = findViewById(R.id.editTextepsilon);
+                epsilon = Float.parseFloat(etepsilon.getText().toString());
+                EditText etipaddr = findViewById(R.id.editTextaddress);
+                ipaddr = etipaddr.getText().toString();
+                EditText etport = findViewById(R.id.editTextport);
+                port = Integer.parseInt(etport.getText().toString());
+                EditText etnthreads = findViewById(R.id.editTextnthreads);
+                nthreads = Integer.parseInt(etnthreads.getText().toString());
+                EditText etthreshold = findViewById(R.id.editTextthreshold);
+                threshold = Integer.parseInt(etthreshold.getText().toString());
+                EditText etmegabins = findViewById(R.id.editTextnmegabins);
+                nmegabins = Integer.parseInt(etmegabins.getText().toString());
+                EditText etpolys = findViewById(R.id.editTextpolysize);
+                polys = Integer.parseInt(etpolys.getText().toString());
+                EditText etnfuns = findViewById(R.id.editTextnfuns);
+                nfuns = Integer.parseInt(etnfuns.getText().toString());
+                EditText etpayloadbl = findViewById(R.id.editTextPayloadbl);
+                payloadbl = Integer.parseInt(etpayloadbl.getText().toString());
+                Spinner sptype = findViewById(R.id.spinner);
+                psi_type = sptype.getSelectedItemPosition();
+            }
             nativeSetContext(neles, oneles, bitlen, epsilon, ipaddr, port, nthreads, threshold, nmegabins, polys, nfuns, payloadbl, psi_type);
             final Button thisbutton = (Button)findViewById(R.id.buttonrun);
             final TextView sumout = (TextView) findViewById(R.id.sumout);
             thisbutton.setEnabled(false);
+            tv.append("Running PSI!\n");
             new Thread(new Runnable() {
                 @Override
                 public void run() {
@@ -105,9 +154,9 @@ public class MainActivity extends AppCompatActivity {
             return Color.GRAY;
         } else if (sum < 10 ) {
             return Color.GREEN;
-        } else if (sum < 30 ) {
+        } else if (sum < 100 ) {
             return Color.YELLOW;
-        } else if (sum >= 30 ) {
+        } else if (sum >= 200 ) {
             return Color.RED;
         } else {
             return Color.BLACK;
