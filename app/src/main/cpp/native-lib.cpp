@@ -174,7 +174,7 @@ jstring get_some_context(JNIEnv* env,
 
     out << "ABY timings: online time " << context.timings.aby_online << " ms, setup time "
         << context.timings.aby_setup << " ms, total time " << context.timings.aby_total
-        << " ms\n";
+        << " ms, base OTs time " << context.timings.base_ots_aby <<  " ms\n";
 
     out << "Total runtime: " << context.timings.total << "ms\n";
     out << "Total runtime w/o base OTs: "
@@ -186,10 +186,10 @@ jstring get_some_context(JNIEnv* env,
 
     out << "ABY recv: online " << context.comm.aby_online_recv << " bytes, setup "
               << context.comm.aby_setup_recv << " bytes, total " << context.comm.aby_total_recv
-              << " bytes\n";
+              << " bytes, base OTs " << context.comm.base_ots_aby_recv << " bytes\n";
     out << "ABY sent: online " << context.comm.aby_online_sent << " bytes, setup "
               << context.comm.aby_setup_sent << " bytes, total " << context.comm.aby_total_sent
-              << " bytes\n";
+              << " bytes, base OTs " << context.comm.base_ots_aby_sent << " bytes\n";
     auto total_recv =
             context.comm.polynomials_transmission_recv + context.comm.aby_total_recv + context.comm.oprf_recv;
     auto total_sent = context.comm.polynomials_transmission_sent + context.comm.aby_total_sent + context.comm.oprf_sent;
