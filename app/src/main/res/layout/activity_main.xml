@@ -116,8 +116,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:inputType="number"
-                    android:text="2.4" />
+                    android:inputType="numberDecimal"
+                    android:text="1.27" />
             </LinearLayout>
 
             <LinearLayout
@@ -139,7 +139,7 @@
                     android:layout_weight="1"
                     android:digits="0123456789."
                     android:inputType="number|numberDecimal"
-                    android:text="192.168.178.49" />
+                    android:text="192.168.0.2" />
 
             </LinearLayout>
 
