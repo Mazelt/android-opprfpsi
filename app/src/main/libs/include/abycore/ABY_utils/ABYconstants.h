@@ -23,7 +23,7 @@
 #include <ENCRYPTO_utils/constants.h>
 
 // Set to 1 for production. 1 will circumvent output reconstruction in the PrintValue and Assert gates, 0 prints these intermediate values.
-#define ABY_PRODUCTION 1
+#define ABY_PRODUCTION 0
 
 //#define ABYDEBUG
 //#define PRINT_OUTPUT
@@ -34,7 +34,7 @@
 #define PRINT_COMMUNICATION_STATS 0 //prints communication statistics
 #define BENCHONLINEPHASE 0 //show very detailed runtime statistic on each sharing for online phase, typically for troubleshooting
 
-#define BENCH_HARDWARE 1 // measure RTT, connection bandwidth and AES
+#define BENCH_HARDWARE 0 // measure RTT, connection bandwidth and AES
 
 #define BATCH
 
