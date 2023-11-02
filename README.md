@@ -1,7 +1,7 @@
 # Android OPPRF-PSI Project
 
-This android project implements the ACT-App prototype that was evaluated in the
-thesis. OPPRF-PSI pre-built library and header files are required to build the
+This android project implements the ACT-App prototype that was evaluated in the paper [Circuit-based PSI for Covid-19 Risk Scoring](https://www.computer.org/csdl/proceedings-article/ipccc/2021/09679360/1AjTpCJji6c) by Reichert, Pazelt and Scheuermann [PDF](https://eprint.iacr.org/2021/1475).
+OPPRF-PSI pre-built library and header files are required to build the
 app. 
 
 The code has some remains from a NDK-boilerplate project from Android
@@ -36,7 +36,7 @@ library and all its dependencies. The gradle build uses cmake and the
 necessary build variables are set, all dependencies are linked as libraries. The
 libraries have to be pre-built in the `app/scr/main/libs/` sub-directories.
 Those libraries are built in the
-[opprfpsi]{https://github.com/Mazelt/OPPRF-PSI}
+[opprfpsi](https://github.com/Mazelt/OPPRF-PSI)
  repository.
 
 Inside the lib directories, all pre-build libs have to be placed in a
