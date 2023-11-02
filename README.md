@@ -36,7 +36,7 @@ library and all its dependencies. The gradle build uses cmake and the
 necessary build variables are set, all dependencies are linked as libraries. The
 libraries have to be pre-built in the `app/scr/main/libs/` sub-directories.
 Those libraries are built in the
-[opprfpsi]{https://gitlab.informatik.hu-berlin.de/ti/theses/student-content/pazelt-marcel-ma/opprf}
+[opprfpsi]{https://github.com/Mazelt/OPPRF-PSI}
  repository.
 
 Inside the lib directories, all pre-build libs have to be placed in a
